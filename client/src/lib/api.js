@@ -82,4 +82,15 @@ export const postsAPI = {
       method: "PUT",
     });
   },
+
+  getPostById: async (postId) => {
+    return apiRequest(`/posts/${postId}`);
+  },
+
+  addComment: async (postId, content) => {
+    return apiRequest(`/posts/${postId}/comments`, {
+      method: "POST",
+      body: JSON.stringify({ content }),
+    });
+  },
 };

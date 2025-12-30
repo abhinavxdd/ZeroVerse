@@ -101,3 +101,50 @@ exports.dislikePost = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+exports.getPostById = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+exports.addComment = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const { content } = req.body;
+    const userId = req.user._id;
+    const alias = req.user.alias;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({ message: "Comment content is required" });
+    }
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const comment = {
+      userId,
+      alias,
+      content: content.trim(),
+      createdAt: new Date(),
+    };
+
+    post.comments.push(comment);
+    await post.save();
+
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
