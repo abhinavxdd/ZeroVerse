@@ -13,6 +13,16 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { postsAPI } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -30,6 +40,9 @@ export default function PostPage() {
   const [dislikes, setDislikes] = useState([]);
   const [isLiking, setIsLiking] = useState(false);
   const [isDisliking, setIsDisliking] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteCommentDialogOpen, setDeleteCommentDialogOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
 
   // Category color mapping
   const getCategoryColor = (category) => {
@@ -131,10 +144,6 @@ export default function PostPage() {
   };
 
   const handleDeletePost = async () => {
-    if (!confirm("Are you sure you want to delete this post?")) {
-      return;
-    }
-
     try {
       await postsAPI.deletePost(post._id);
       toast.success("Post deleted successfully");
@@ -145,15 +154,17 @@ export default function PostPage() {
     }
   };
 
-  const handleDeleteComment = async (commentId) => {
-    if (!confirm("Are you sure you want to delete this comment?")) {
-      return;
-    }
+  const handleDeleteComment = async () => {
+    if (!commentToDelete) return;
 
     try {
-      const updatedPost = await postsAPI.deleteComment(post._id, commentId);
+      const updatedPost = await postsAPI.deleteComment(
+        post._id,
+        commentToDelete
+      );
       setComments(updatedPost.comments);
       toast.success("Comment deleted successfully");
+      setCommentToDelete(null);
     } catch (error) {
       console.error("Error deleting comment:", error);
       toast.error(error.message || "Error deleting comment");
@@ -237,7 +248,7 @@ export default function PostPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleDeletePost}
+                  onClick={() => setDeleteDialogOpen(true)}
                   className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-500/10"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -394,7 +405,10 @@ export default function PostPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteComment(comment._id)}
+                          onClick={() => {
+                            setCommentToDelete(comment._id);
+                            setDeleteCommentDialogOpen(true);
+                          }}
                           className="h-6 w-6 p-0 ml-auto text-red-500 hover:text-red-600 hover:bg-red-500/10"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -411,6 +425,61 @@ export default function PostPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Post Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-zinc-950 border border-white/20">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              Delete Post
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-white/60">
+              Are you sure you want to delete this post? This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/20 text-white hover:bg-white/10">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeletePost}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Comment Dialog */}
+      <AlertDialog
+        open={deleteCommentDialogOpen}
+        onOpenChange={setDeleteCommentDialogOpen}
+      >
+        <AlertDialogContent className="bg-zinc-950 border border-white/20">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              Delete Comment
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-white/60">
+              Are you sure you want to delete this comment? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/20 text-white hover:bg-white/10">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteComment}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
