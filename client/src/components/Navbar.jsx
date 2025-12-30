@@ -88,9 +88,11 @@ const Navbar = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white cursor-pointer">
-                    Profile
-                  </DropdownMenuItem>
+                  <Link href="/profile">
+                    <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white cursor-pointer">
+                      Profile
+                    </DropdownMenuItem>
+                  </Link>
                   <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white cursor-pointer">
                     Settings
                   </DropdownMenuItem>
