@@ -398,6 +398,12 @@ function PostCard({ post, userId, router, searchQuery }) {
           </span>
           <span>•</span>
           <span>{formatDate(post.createdAt)}</span>
+          {post.isEdited && (
+            <>
+              <span>•</span>
+              <span className="text-xs text-muted-foreground">(edited)</span>
+            </>
+          )}
           {post.category && (
             <>
               <span>•</span>

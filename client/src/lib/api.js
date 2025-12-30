@@ -109,4 +109,18 @@ export const postsAPI = {
       method: "DELETE",
     });
   },
+
+  updatePost: async (postId, data) => {
+    return apiRequest(`/posts/${postId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  updateComment: async (postId, commentId, content) => {
+    return apiRequest(`/posts/${postId}/comments/${commentId}`, {
+      method: "PUT",
+      body: JSON.stringify({ content }),
+    });
+  },
 };

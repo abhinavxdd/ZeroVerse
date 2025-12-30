@@ -10,6 +10,9 @@ import {
   ArrowLeft,
   Send,
   Trash2,
+  Edit2,
+  X,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -43,6 +46,11 @@ export default function PostPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteCommentDialogOpen, setDeleteCommentDialogOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
+  const [isEditingPost, setIsEditingPost] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
+  const [editedContent, setEditedContent] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editedCommentContent, setEditedCommentContent] = useState("");
 
   // Category color mapping
   const getCategoryColor = (category) => {
@@ -171,6 +179,62 @@ export default function PostPage() {
     }
   };
 
+  const handleEditPost = () => {
+    setEditedTitle(post.title);
+    setEditedContent(post.content || "");
+    setIsEditingPost(true);
+  };
+
+  const handleSavePost = async () => {
+    try {
+      const updatedPost = await postsAPI.updatePost(post._id, {
+        title: editedTitle,
+        content: editedContent,
+      });
+      setPost(updatedPost);
+      setIsEditingPost(false);
+      toast.success("Post updated successfully");
+    } catch (error) {
+      console.error("Error updating post:", error);
+      toast.error(error.message || "Error updating post");
+    }
+  };
+
+  const handleCancelEditPost = () => {
+    setIsEditingPost(false);
+    setEditedTitle("");
+    setEditedContent("");
+  };
+
+  const handleEditComment = (comment) => {
+    setEditingCommentId(comment._id);
+    setEditedCommentContent(comment.content);
+  };
+
+  const handleSaveComment = async () => {
+    if (!editingCommentId) return;
+
+    try {
+      const updatedPost = await postsAPI.updateComment(
+        post._id,
+        editingCommentId,
+        editedCommentContent
+      );
+      setComments(updatedPost.comments);
+      setEditingCommentId(null);
+      setEditedCommentContent("");
+      toast.success("Comment updated successfully");
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      toast.error(error.message || "Error updating comment");
+    }
+  };
+
+  const handleCancelEditComment = () => {
+    setEditingCommentId(null);
+    setEditedCommentContent("");
+  };
+
   const handleShare = async () => {
     const postUrl = `${window.location.origin}/post/${post._id}`;
 
@@ -260,6 +324,12 @@ export default function PostPage() {
             <span className="font-medium">@{post.alias || "anonymous"}</span>
             <span>•</span>
             <span>{formatDate(post.createdAt)}</span>
+            {post.isEdited && (
+              <>
+                <span>•</span>
+                <span className="text-xs text-muted-foreground">(edited)</span>
+              </>
+            )}
             {post.category && (
               <>
                 <span>•</span>
@@ -273,29 +343,82 @@ export default function PostPage() {
               </>
             )}
             {user?.id === post.userId && (
-              <div className="ml-auto">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setDeleteDialogOpen(true)}
-                  className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              <div className="ml-auto flex gap-1">
+                {!isEditingPost && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleEditPost}
+                      className="h-7 w-7 p-0 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDeleteDialogOpen(true)}
+                      className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
               </div>
             )}
           </div>
 
-          {/* Title */}
-          <h1 className="text-2xl font-bold text-foreground mb-3">
-            {post.title}
-          </h1>
+          {/* Title and Content - Editable */}
+          {isEditingPost ? (
+            <div className="space-y-3 mb-4">
+              <input
+                type="text"
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                className="w-full text-2xl font-bold bg-muted/50 border border-border rounded-lg px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Post title"
+              />
+              <textarea
+                value={editedContent}
+                onChange={(e) => setEditedContent(e.target.value)}
+                rows={6}
+                className="w-full bg-muted/50 border border-border rounded-lg px-4 py-3 text-base text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                placeholder="Post content (optional)"
+              />
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSavePost}
+                  size="sm"
+                  className="gap-2 bg-green-600 hover:bg-green-700"
+                >
+                  <Check className="h-4 w-4" />
+                  Save
+                </Button>
+                <Button
+                  onClick={handleCancelEditPost}
+                  size="sm"
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Title */}
+              <h1 className="text-2xl font-bold text-foreground mb-3">
+                {post.title}
+              </h1>
 
-          {/* Content */}
-          {post.content && (
-            <p className="text-base text-foreground mb-4 whitespace-pre-wrap">
-              {post.content}
-            </p>
+              {/* Content */}
+              {post.content && (
+                <p className="text-base text-foreground mb-4 whitespace-pre-wrap">
+                  {post.content}
+                </p>
+              )}
+            </>
           )}
 
           {/* Image */}
@@ -431,23 +554,71 @@ export default function PostPage() {
                       <span className="text-xs text-muted-foreground">
                         {formatDate(comment.createdAt)}
                       </span>
-                      {user?.id === comment.userId && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setCommentToDelete(comment._id);
-                            setDeleteCommentDialogOpen(true);
-                          }}
-                          className="h-6 w-6 p-0 ml-auto text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                      {comment.isEdited && (
+                        <span className="text-xs text-muted-foreground">
+                          (edited)
+                        </span>
                       )}
+                      {user?.id === comment.userId &&
+                        editingCommentId !== comment._id && (
+                          <div className="ml-auto flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditComment(comment)}
+                              className="h-6 w-6 p-0 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
+                            >
+                              <Edit2 className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setCommentToDelete(comment._id);
+                                setDeleteCommentDialogOpen(true);
+                              }}
+                              className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
                     </div>
-                    <p className="text-sm text-foreground whitespace-pre-wrap">
-                      {comment.content}
-                    </p>
+                    {editingCommentId === comment._id ? (
+                      <div className="space-y-2">
+                        <textarea
+                          value={editedCommentContent}
+                          onChange={(e) =>
+                            setEditedCommentContent(e.target.value)
+                          }
+                          rows={3}
+                          className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={handleSaveComment}
+                            size="sm"
+                            className="gap-1 bg-green-600 hover:bg-green-700 h-7 text-xs"
+                          >
+                            <Check className="h-3 w-3" />
+                            Save
+                          </Button>
+                          <Button
+                            onClick={handleCancelEditComment}
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 h-7 text-xs"
+                          >
+                            <X className="h-3 w-3" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-foreground whitespace-pre-wrap">
+                        {comment.content}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))

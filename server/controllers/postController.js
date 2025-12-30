@@ -206,3 +206,73 @@ exports.deleteComment = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+exports.updatePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.user._id;
+    const { title, content } = req.body;
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if user is the owner of the post
+    if (post.userId.toString() !== userId.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this post" });
+    }
+
+    if (title) post.title = title;
+    if (content !== undefined) post.content = content;
+    post.updatedAt = new Date();
+    post.isEdited = true;
+
+    await post.save();
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+exports.updateComment = async (req, res) => {
+  try {
+    const { id: postId, commentId } = req.params;
+    const userId = req.user._id;
+    const { content } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({ message: "Comment content is required" });
+    }
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Check if user is the owner of the comment
+    if (comment.userId.toString() !== userId.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this comment" });
+    }
+
+    comment.content = content.trim();
+    comment.isEdited = true;
+    await post.save();
+
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
