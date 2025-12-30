@@ -140,10 +140,14 @@ export default function ProfilePage() {
               </Link>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-6">
               {posts.map((post) => (
-                <Link key={post._id} href={`/post/${post._id}`}>
-                  <div className="bg-zinc-950 border border-white/10 hover:border-white/20 rounded-lg transition-all overflow-hidden">
+                <Link
+                  key={post._id}
+                  href={`/post/${post._id}`}
+                  className="block"
+                >
+                  <div className="bg-zinc-900 border border-white/10 hover:border-white/20 rounded-lg transition-all overflow-hidden mb-6">
                     <div className="flex gap-3 p-4">
                       {/* Avatar */}
                       <Avatar className="h-8 w-8 shrink-0">
