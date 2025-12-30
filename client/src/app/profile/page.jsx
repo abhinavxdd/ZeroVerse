@@ -23,6 +23,18 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Category color mapping
+  const getCategoryColor = (category) => {
+    const colors = {
+      General: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+      Hostel: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+      Exams: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+      Gossip: "bg-green-500/10 text-green-500 border-green-500/20",
+      Placements: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+    };
+    return colors[category] || colors.General;
+  };
+
   useEffect(() => {
     if (!user) {
       router.push("/login");
@@ -183,7 +195,11 @@ export default function ProfilePage() {
 
                         {/* Tag */}
                         <div className="mb-3">
-                          <span className="inline-block bg-blue-600/20 text-blue-400 text-xs font-medium px-2.5 py-1 rounded-full border border-blue-600/30">
+                          <span
+                            className={`inline-block text-xs font-medium px-2.5 py-1 rounded-full border ${getCategoryColor(
+                              post.category
+                            )}`}
+                          >
                             {post.category}
                           </span>
                         </div>

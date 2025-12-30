@@ -56,6 +56,10 @@ export const authAPI = {
       body: JSON.stringify({ email, password }),
     });
   },
+
+  getProfile: async () => {
+    return apiRequest("/auth/profile");
+  },
 };
 
 // Posts API calls

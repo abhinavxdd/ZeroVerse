@@ -78,3 +78,46 @@ exports.login = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+exports.getUserProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get user's posts
+    const Post = require("../models/Post");
+    const posts = await Post.find({ userId }).sort({ createdAt: -1 }).lean();
+
+    // Calculate stats
+    const totalLikes = posts.reduce(
+      (sum, post) => sum + (post.likes?.length || 0),
+      0
+    );
+    const totalDislikes = posts.reduce(
+      (sum, post) => sum + (post.dislikes?.length || 0),
+      0
+    );
+
+    res.status(200).json({
+      user: {
+        id: user._id,
+        email: user.email,
+        alias: user.alias,
+        createdAt: user.createdAt,
+      },
+      stats: {
+        totalPosts: posts.length,
+        totalLikes,
+        totalDislikes,
+      },
+      posts,
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
