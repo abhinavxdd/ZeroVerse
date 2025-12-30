@@ -97,4 +97,16 @@ export const postsAPI = {
       body: JSON.stringify({ content }),
     });
   },
+
+  deletePost: async (postId) => {
+    return apiRequest(`/posts/${postId}`, {
+      method: "DELETE",
+    });
+  },
+
+  deleteComment: async (postId, commentId) => {
+    return apiRequest(`/posts/${postId}/comments/${commentId}`, {
+      method: "DELETE",
+    });
+  },
 };

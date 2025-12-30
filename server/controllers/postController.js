@@ -148,3 +148,61 @@ exports.addComment = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+exports.deletePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.user._id;
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Check if user is the owner of the post
+    if (post.userId.toString() !== userId.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to delete this post" });
+    }
+
+    await Post.findByIdAndDelete(postId);
+    res.status(200).json({ message: "Post deleted successfully" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+exports.deleteComment = async (req, res) => {
+  try {
+    const { id: postId, commentId } = req.params;
+    const userId = req.user._id;
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Check if user is the owner of the comment
+    if (comment.userId.toString() !== userId.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to delete this comment" });
+    }
+
+    comment.deleteOne();
+    await post.save();
+
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};

@@ -9,6 +9,7 @@ import {
   ThumbsDown,
   ArrowLeft,
   Send,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -129,6 +130,36 @@ export default function PostPage() {
     }
   };
 
+  const handleDeletePost = async () => {
+    if (!confirm("Are you sure you want to delete this post?")) {
+      return;
+    }
+
+    try {
+      await postsAPI.deletePost(post._id);
+      toast.success("Post deleted successfully");
+      router.push("/");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast.error(error.message || "Error deleting post");
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!confirm("Are you sure you want to delete this comment?")) {
+      return;
+    }
+
+    try {
+      const updatedPost = await postsAPI.deleteComment(post._id, commentId);
+      setComments(updatedPost.comments);
+      toast.success("Comment deleted successfully");
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast.error(error.message || "Error deleting comment");
+    }
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -200,6 +231,18 @@ export default function PostPage() {
                   {post.category}
                 </span>
               </>
+            )}
+            {user?.id === post.userId && (
+              <div className="ml-auto">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDeletePost}
+                  className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             )}
           </div>
 
@@ -331,7 +374,7 @@ export default function PostPage() {
             ) : (
               comments.map((comment, index) => (
                 <div
-                  key={index}
+                  key={comment._id || index}
                   className="flex gap-3 pb-4 border-b border-border last:border-0"
                 >
                   <Avatar className="h-8 w-8">
@@ -347,6 +390,16 @@ export default function PostPage() {
                       <span className="text-xs text-muted-foreground">
                         {formatDate(comment.createdAt)}
                       </span>
+                      {user?.id === comment.userId && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteComment(comment._id)}
+                          className="h-6 w-6 p-0 ml-auto text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
                     <p className="text-sm text-foreground whitespace-pre-wrap">
                       {comment.content}
