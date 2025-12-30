@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { MessageSquare, Share2, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +12,7 @@ export default function HomePage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const router = useRouter();
 
   // Fetch posts from backend
   useEffect(() => {
@@ -42,7 +44,12 @@ export default function HomePage() {
           </div>
         ) : (
           posts.map((post) => (
-            <PostCard key={post._id} post={post} userId={user?.id} />
+            <PostCard
+              key={post._id}
+              post={post}
+              userId={user?.id}
+              router={router}
+            />
           ))
         )}
       </main>
@@ -51,11 +58,23 @@ export default function HomePage() {
 }
 
 // --- POST CARD COMPONENT ---
-function PostCard({ post, userId }) {
+function PostCard({ post, userId, router }) {
   const [likes, setLikes] = useState(post.likes || []);
   const [dislikes, setDislikes] = useState(post.dislikes || []);
   const [isLiking, setIsLiking] = useState(false);
   const [isDisliking, setIsDisliking] = useState(false);
+
+  // Category color mapping
+  const getCategoryColor = (category) => {
+    const colors = {
+      General: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+      Hostel: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+      Exams: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+      Gossip: "bg-green-500/10 text-green-500 border-green-500/20",
+      Placements: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+    };
+    return colors[category] || colors.General;
+  };
 
   // Check if current user has liked or disliked
   const hasLiked = userId && likes.includes(userId);
@@ -132,6 +151,18 @@ function PostCard({ post, userId }) {
           </span>
           <span>•</span>
           <span>{formatDate(post.createdAt)}</span>
+          {post.category && (
+            <>
+              <span>•</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${getCategoryColor(
+                  post.category
+                )}`}
+              >
+                {post.category}
+              </span>
+            </>
+          )}
         </div>
 
         {/* Title */}
@@ -191,10 +222,11 @@ function PostCard({ post, userId }) {
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => router.push(`/post/${post._id}`)}
             className="gap-2 h-9 px-3 text-sm hover:bg-muted rounded-full"
           >
             <MessageSquare className="w-4 h-4" />
-            <span>{post.commentsCount || 0}</span>
+            <span>{post.comments?.length || 0}</span>
           </Button>
           <Button
             variant="ghost"
