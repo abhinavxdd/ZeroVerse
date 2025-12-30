@@ -2,11 +2,23 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { MessageSquare, Share2, ThumbsUp, ThumbsDown } from "lucide-react";
+import {
+  MessageSquare,
+  Share2,
+  ThumbsUp,
+  ThumbsDown,
+  Home,
+  PenSquare,
+  Info,
+  Github,
+  Linkedin,
+  Mail,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { postsAPI } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
@@ -31,28 +43,127 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-6">
-      <main className="flex flex-col gap-4">
-        {/* Posts Feed */}
-        {loading ? (
-          <div className="text-center py-12 text-muted-foreground">
-            Loading posts...
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            No posts yet. Be the first to create one!
-          </div>
-        ) : (
-          posts.map((post) => (
-            <PostCard
-              key={post._id}
-              post={post}
-              userId={user?.id}
-              router={router}
-            />
-          ))
-        )}
-      </main>
+    <div className="container mx-auto max-w-7xl px-4 py-6">
+      <div className="flex gap-6">
+        {/* Left Sidebar Navigation */}
+        <aside className="hidden lg:block w-64 sticky top-20 h-fit">
+          <nav className="bg-card border border-border rounded-lg p-4 space-y-2">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+              Navigation
+            </h2>
+
+            <button
+              onClick={() => router.push("/")}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-foreground"
+            >
+              <Home className="w-4 h-4" />
+              <span className="text-sm font-medium">Home</span>
+            </button>
+
+            <button
+              onClick={() => router.push("/create")}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-foreground"
+            >
+              <PenSquare className="w-4 h-4" />
+              <span className="text-sm font-medium">Create Post</span>
+            </button>
+
+            <div className="pt-4 mt-4 border-t border-border">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 px-3">
+                Categories
+              </h3>
+
+              <button className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors">
+                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                <span className="text-sm text-foreground">General</span>
+              </button>
+
+              <button className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors">
+                <span className="w-2 h-2 rounded-full bg-orange-500"></span>
+                <span className="text-sm text-foreground">Hostel</span>
+              </button>
+
+              <button className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors">
+                <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                <span className="text-sm text-foreground">Exams</span>
+              </button>
+
+              <button className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                <span className="text-sm text-foreground">Gossip</span>
+              </button>
+
+              <button className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors">
+                <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                <span className="text-sm text-foreground">Placements</span>
+              </button>
+            </div>
+
+            <div className="pt-4 mt-4 border-t border-border space-y-2">
+              <button className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-foreground">
+                <Info className="w-4 h-4" />
+                <span className="text-sm font-medium">About & Rules</span>
+              </button>
+            </div>
+
+            <div className="pt-4 mt-4 border-t border-border">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 px-3">
+                Connect Me On
+              </h3>
+              <div className="flex gap-2 px-3">
+                <a
+                  href="https://github.com/abhinavxdd"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-9 h-9 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                  title="GitHub"
+                >
+                  <Github className="w-4 h-4" />
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/abh1navvv"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-9 h-9 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                  title="LinkedIn"
+                >
+                  <Linkedin className="w-4 h-4" />
+                </a>
+                <a
+                  href="mailto:abh1nav.rj02@gmail.com"
+                  className="flex items-center justify-center w-9 h-9 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                  title="Email"
+                >
+                  <Mail className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 max-w-2xl flex flex-col gap-4">
+          {/* Posts Feed */}
+          {loading ? (
+            <div className="text-center py-12 text-muted-foreground">
+              Loading posts...
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              No posts yet. Be the first to create one!
+            </div>
+          ) : (
+            posts.map((post) => (
+              <PostCard
+                key={post._id}
+                post={post}
+                userId={user?.id}
+                router={router}
+              />
+            ))
+          )}
+        </main>
+      </div>
     </div>
   );
 }
@@ -82,7 +193,7 @@ function PostCard({ post, userId, router }) {
 
   const handleLike = async () => {
     if (!userId) {
-      alert("Please log in to like posts!");
+      toast.error("Please log in to like posts!");
       return;
     }
     if (isLiking) return;
@@ -94,7 +205,7 @@ function PostCard({ post, userId, router }) {
       setDislikes(updatedPost.dislikes);
     } catch (error) {
       console.error("Error liking post:", error);
-      alert("Error liking post: " + error.message);
+      toast.error("Error liking post: " + error.message);
     } finally {
       setIsLiking(false);
     }
@@ -102,7 +213,7 @@ function PostCard({ post, userId, router }) {
 
   const handleDislike = async () => {
     if (!userId) {
-      alert("Please log in to dislike posts!");
+      toast.error("Please log in to dislike posts!");
       return;
     }
     if (isDisliking) return;
@@ -114,7 +225,7 @@ function PostCard({ post, userId, router }) {
       setDislikes(updatedPost.dislikes);
     } catch (error) {
       console.error("Error disliking post:", error);
-      alert("Error disliking post: " + error.message);
+      toast.error("Error disliking post: " + error.message);
     } finally {
       setIsDisliking(false);
     }

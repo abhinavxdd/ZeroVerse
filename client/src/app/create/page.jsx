@@ -12,6 +12,7 @@ import {
   Image as ImageIcon,
   Video,
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function CreatePostPage() {
   const [category, setCategory] = useState("General");
@@ -94,7 +95,7 @@ export default function CreatePostPage() {
     e.preventDefault();
 
     if (!title.trim()) {
-      alert("Please enter a title");
+      toast.error("Please enter a title");
       return;
     }
 
@@ -103,12 +104,12 @@ export default function CreatePostPage() {
       .split(/\s+/)
       .filter((word) => word.length > 0).length;
     if (wordCount > 50) {
-      alert("Title cannot exceed 50 words");
+      toast.error("Title cannot exceed 50 words");
       return;
     }
 
     if (!user) {
-      alert("Please log in to create a post");
+      toast.error("Please log in to create a post");
       router.push("/login");
       return;
     }
@@ -119,7 +120,7 @@ export default function CreatePostPage() {
       router.push("/");
     } catch (error) {
       console.error("Error creating post:", error);
-      alert("Error creating post: " + error.message);
+      toast.error("Error creating post: " + error.message);
     } finally {
       setSubmitting(false);
     }

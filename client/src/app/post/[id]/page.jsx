@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { postsAPI } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export default function PostPage() {
   const params = useParams();
@@ -52,7 +53,7 @@ export default function PostPage() {
         setComments(postData.comments || []);
       } catch (error) {
         console.error("Error fetching post:", error);
-        alert("Error loading post");
+        toast.error("Error loading post");
       } finally {
         setLoading(false);
       }
@@ -68,7 +69,7 @@ export default function PostPage() {
 
   const handleLike = async () => {
     if (!user) {
-      alert("Please log in to like posts!");
+      toast.error("Please log in to like posts!");
       return;
     }
     if (isLiking) return;
@@ -87,7 +88,7 @@ export default function PostPage() {
 
   const handleDislike = async () => {
     if (!user) {
-      alert("Please log in to dislike posts!");
+      toast.error("Please log in to dislike posts!");
       return;
     }
     if (isDisliking) return;
@@ -108,8 +109,7 @@ export default function PostPage() {
     e.preventDefault();
 
     if (!user) {
-      alert("Please log in to comment!");
-      return;
+      toast.error("Please log in to comment!");
     }
 
     if (!newComment.trim()) {
@@ -123,7 +123,7 @@ export default function PostPage() {
       setNewComment("");
     } catch (error) {
       console.error("Error adding comment:", error);
-      alert("Error adding comment");
+      toast.error("Error adding comment");
     } finally {
       setSubmitting(false);
     }
