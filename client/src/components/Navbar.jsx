@@ -51,10 +51,12 @@ const Navbar = () => {
           {user ? (
             <>
               {/* Create Post Button */}
-              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Create</span>
-              </Button>
+              <Link href="/create">
+                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Create</span>
+                </Button>
+              </Link>
 
               {/* Profile Dropdown */}
               <DropdownMenu>
