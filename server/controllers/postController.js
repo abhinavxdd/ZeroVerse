@@ -37,13 +37,66 @@ exports.createPost = async (req, res) => {
 exports.likePost = async (req, res) => {
   try {
     const postId = req.params.id;
+    const userId = req.user._id;
 
-    const updatedPost = await Post.findByIdAndUpdate(
-      postId,
-      { $inc: { likes: 1 } }, // Increase likes by 1
-      { new: true } // Return the updated post
-    );
-    res.status(200).json(updatedPost);
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const alreadyLiked = post.likes.includes(userId);
+
+    if (alreadyLiked) {
+      // Unlike - remove user from likes array
+      post.likes = post.likes.filter(
+        (id) => id.toString() !== userId.toString()
+      );
+    } else {
+      // Remove from dislikes if present
+      post.dislikes = post.dislikes.filter(
+        (id) => id.toString() !== userId.toString()
+      );
+      // Add to likes
+      post.likes.push(userId);
+    }
+
+    await post.save();
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+exports.dislikePost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.user._id;
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const alreadyDisliked = post.dislikes.includes(userId);
+
+    if (alreadyDisliked) {
+      // Undo dislike - remove user from dislikes array
+      post.dislikes = post.dislikes.filter(
+        (id) => id.toString() !== userId.toString()
+      );
+    } else {
+      // Remove from likes if present
+      post.likes = post.likes.filter(
+        (id) => id.toString() !== userId.toString()
+      );
+      // Add to dislikes
+      post.dislikes.push(userId);
+    }
+
+    await post.save();
+    res.status(200).json(post);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
