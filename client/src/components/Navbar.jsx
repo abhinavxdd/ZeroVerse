@@ -52,7 +52,7 @@ const Navbar = () => {
             <>
               {/* Create Post Button */}
               <Link href="/create">
-                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 cursor-pointer">
                   <Plus className="h-4 w-4" />
                   <span className="hidden sm:inline">Create</span>
                 </Button>
@@ -63,7 +63,7 @@ const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="relative h-8 w-8 rounded-full hover:bg-zinc-800"
+                    className="relative h-8 w-8 rounded-full hover:bg-zinc-800 cursor-pointer"
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="bg-zinc-700 text-white">
