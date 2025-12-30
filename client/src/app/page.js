@@ -300,6 +300,35 @@ function PostCard({ post, userId, router }) {
     }
   };
 
+  const handleShare = async () => {
+    const postUrl = `${window.location.origin}/post/${post._id}`;
+
+    // Try native Web Share API first (works on mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post.title,
+          text: post.content?.substring(0, 100) || post.title,
+          url: postUrl,
+        });
+      } catch (error) {
+        // User cancelled or error occurred
+        if (error.name !== "AbortError") {
+          console.error("Error sharing:", error);
+        }
+      }
+    } else {
+      // Fallback to clipboard
+      try {
+        await navigator.clipboard.writeText(postUrl);
+        toast.success("Link copied to clipboard!");
+      } catch (error) {
+        console.error("Error copying to clipboard:", error);
+        toast.error("Failed to copy link");
+      }
+    }
+  };
+
   // Format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -423,7 +452,10 @@ function PostCard({ post, userId, router }) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleShare();
+            }}
             className="gap-2 h-9 px-3 text-sm hover:bg-muted rounded-full cursor-pointer"
           >
             <Share2 className="w-4 h-4" /> Share
