@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Search, Zap, Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSearch } from "@/contexts/SearchContext";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,12 +19,17 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { searchQuery, setSearchQuery } = useSearch();
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-black text-white">
       <div className="container mx-auto flex h-16 items-center justify-between gap-4 px-4">
         {/* --- Logo --- */}
-        <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+        <Link
+          href="/"
+          onClick={() => setSearchQuery("")}
+          className="flex items-center gap-2 flex-shrink-0"
+        >
           <span className="text-xl font-bold tracking-tight text-white">
             ZeroVerse
           </span>
@@ -41,6 +47,8 @@ const Navbar = () => {
             <input
               type="text"
               placeholder="Search posts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-zinc-900 border border-white/10 rounded-full pl-16 pr-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>

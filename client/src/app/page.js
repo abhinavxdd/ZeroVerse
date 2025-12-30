@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { postsAPI } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSearch } from "@/contexts/SearchContext";
 import { toast } from "sonner";
 
 export default function HomePage() {
@@ -30,6 +31,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const { user } = useAuth();
+  const { searchQuery } = useSearch();
   const router = useRouter();
 
   // Fetch posts from backend
@@ -48,10 +50,17 @@ export default function HomePage() {
     fetchPosts();
   }, []);
 
-  // Filter posts by category
-  const filteredPosts = selectedCategory
-    ? posts.filter((post) => post.category === selectedCategory)
-    : posts;
+  // Filter posts by category and search
+  const filteredPosts = posts.filter((post) => {
+    const matchesCategory = selectedCategory
+      ? post.category === selectedCategory
+      : true;
+    const matchesSearch = searchQuery
+      ? post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.content?.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    return matchesCategory && matchesSearch;
+  });
 
   const categories = ["General", "Hostel", "Exams", "Gossip", "Placements"];
 
@@ -217,7 +226,9 @@ export default function HomePage() {
             </div>
           ) : filteredPosts.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              {selectedCategory
+              {searchQuery
+                ? "No posts found."
+                : selectedCategory
                 ? `No posts in ${selectedCategory} category yet.`
                 : "No posts yet. Be the first to create one!"}
             </div>
@@ -228,6 +239,7 @@ export default function HomePage() {
                 post={post}
                 userId={user?.id}
                 router={router}
+                searchQuery={searchQuery}
               />
             ))
           )}
@@ -238,11 +250,34 @@ export default function HomePage() {
 }
 
 // --- POST CARD COMPONENT ---
-function PostCard({ post, userId, router }) {
+function PostCard({ post, userId, router, searchQuery }) {
   const [likes, setLikes] = useState(post.likes || []);
   const [dislikes, setDislikes] = useState(post.dislikes || []);
   const [isLiking, setIsLiking] = useState(false);
   const [isDisliking, setIsDisliking] = useState(false);
+
+  // Highlight search terms
+  const highlightText = (text, query) => {
+    if (!query || !text) return text;
+
+    const parts = text.split(new RegExp(`(${query})`, "gi"));
+    return (
+      <>
+        {parts.map((part, index) =>
+          part.toLowerCase() === query.toLowerCase() ? (
+            <mark
+              key={index}
+              className="bg-yellow-500/30 text-yellow-200 px-0.5 rounded"
+            >
+              {part}
+            </mark>
+          ) : (
+            part
+          )
+        )}
+      </>
+    );
+  };
 
   // Category color mapping
   const getCategoryColor = (category) => {
@@ -379,13 +414,13 @@ function PostCard({ post, userId, router }) {
 
         {/* Title */}
         <h2 className="text-lg font-semibold text-foreground mb-2 leading-snug">
-          {post.title}
+          {highlightText(post.title, searchQuery)}
         </h2>
 
         {/* Body Content */}
         {post.content && (
           <p className="text-sm text-muted-foreground mb-3 whitespace-pre-wrap">
-            {post.content}
+            {highlightText(post.content, searchQuery)}
           </p>
         )}
 
