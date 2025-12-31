@@ -136,4 +136,8 @@ export const postsAPI = {
       body: JSON.stringify({ content }),
     });
   },
+
+  getLeaderboard: async () => {
+    return apiRequest("/posts/leaderboard");
+  },
 };

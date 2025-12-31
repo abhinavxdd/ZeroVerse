@@ -13,9 +13,11 @@ const {
   deleteComment,
   updatePost,
   updateComment,
+  getLeaderboard,
 } = require("../controllers/postController");
 
 router.get("/", getPosts);
+router.get("/leaderboard", getLeaderboard);
 router.post("/", protect, createPost);
 router.get("/:id", getPostById);
 router.put("/:id", protect, updatePost);

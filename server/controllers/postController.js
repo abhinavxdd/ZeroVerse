@@ -276,3 +276,53 @@ exports.updateComment = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+exports.getLeaderboard = async (req, res) => {
+  try {
+    const leaderboard = await Post.aggregate([
+      {
+        $project: {
+          userId: 1,
+          alias: 1,
+          title: 1,
+          category: 1,
+          createdAt: 1,
+          likesCount: { $size: "$likes" },
+          commentsCount: { $size: "$comments" },
+        },
+      },
+      {
+        $group: {
+          _id: "$userId",
+          alias: { $first: "$alias" },
+          totalLikes: { $sum: "$likesCount" },
+          totalPosts: { $sum: 1 },
+          topPost: {
+            $max: {
+              title: "$title",
+              category: "$category",
+              createdAt: "$createdAt",
+              likesCount: "$likesCount",
+              commentsCount: "$commentsCount",
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          totalLikes: { $gt: 0 },
+        },
+      },
+      {
+        $sort: { totalLikes: -1 },
+      },
+      {
+        $limit: 10,
+      },
+    ]);
+
+    res.status(200).json(leaderboard);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
