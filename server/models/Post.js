@@ -9,7 +9,7 @@ const postSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: [true, "Please add some content"],
+    required: false,
   },
   category: {
     type: String,
@@ -26,6 +26,23 @@ const postSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  media: [
+    {
+      url: {
+        type: String,
+        required: true,
+      },
+      publicId: {
+        type: String,
+        required: true,
+      },
+      resourceType: {
+        type: String,
+        enum: ["image", "video"],
+        required: true,
+      },
+    },
+  ],
   likes: [
     {
       type: mongoose.Schema.Types.ObjectId,
