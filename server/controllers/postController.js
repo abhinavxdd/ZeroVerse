@@ -16,6 +16,9 @@ exports.getPosts = async (req, res) => {
 
 exports.createPost = async (req, res) => {
   try {
+    console.log("Request body:", req.body);
+    console.log("Request files:", req.files);
+
     // Get the data sent from frontend (title, content, category)
     const { title, content, category } = req.body;
 
@@ -27,9 +30,28 @@ exports.createPost = async (req, res) => {
       alias: req.user.alias,
     };
 
+    // Handle uploaded files
+    if (req.files && req.files.length > 0) {
+      console.log("Processing files:", req.files.length);
+      postData.media = req.files.map((file) => {
+        console.log("File details:", {
+          path: file.path,
+          filename: file.filename,
+          mimetype: file.mimetype,
+        });
+        return {
+          url: file.path, // Cloudinary URL
+          publicId: file.filename, // Cloudinary public ID
+          resourceType: file.mimetype?.startsWith("video") ? "video" : "image",
+        };
+      });
+    }
+
+    console.log("Post data to save:", JSON.stringify(postData, null, 2));
     const newPost = await Post.create(postData); // Saved to MongoDB
     res.status(201).json(newPost);
   } catch (err) {
+    console.error("Error creating post:", err);
     res.status(400).json({ message: err.message });
   }
 };

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
+const { upload } = require("../config/cloudinary");
 
 const {
   getPosts,
@@ -18,7 +19,7 @@ const {
 
 router.get("/", getPosts);
 router.get("/leaderboard", getLeaderboard);
-router.post("/", protect, createPost);
+router.post("/", protect, upload.array("media", 5), createPost);
 router.get("/:id", getPostById);
 router.put("/:id", protect, updatePost);
 router.put("/:id/like", protect, likePost);
