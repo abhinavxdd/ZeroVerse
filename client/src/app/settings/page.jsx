@@ -127,125 +127,165 @@ export default function SettingsPage() {
           <div className="bg-zinc-900 border border-white/10 rounded-lg">
             <div className="p-4 border-b border-white/10">
               <h2 className="font-semibold">Change Password</h2>
-              <p className="text-sm text-gray-400 mt-1">
-                Update your password to keep your account secure
-              </p>
             </div>
             <div className="p-4">
-              <form onSubmit={handleChangePassword} className="space-y-3">
+              <div className="flex items-center justify-between">
                 <div>
-                  <label className="text-sm text-gray-300 block mb-1.5">
-                    Current Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showCurrentPassword ? "text" : "password"}
-                      value={passwordData.currentPassword}
-                      onChange={(e) =>
-                        setPasswordData({
-                          ...passwordData,
-                          currentPassword: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 bg-black border border-white/20 rounded-md focus:outline-none focus:border-white/40 text-white pr-10"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowCurrentPassword(!showCurrentPassword)
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                    >
-                      {showCurrentPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
+                  <h3 className="font-medium">Update Password</h3>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Change your password to keep your account secure
+                  </p>
                 </div>
-
-                <div>
-                  <label className="text-sm text-gray-300 block mb-1.5">
-                    New Password (min 12 characters)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showNewPassword ? "text" : "password"}
-                      value={passwordData.newPassword}
-                      onChange={(e) =>
-                        setPasswordData({
-                          ...passwordData,
-                          newPassword: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 bg-black border border-white/20 rounded-md focus:outline-none focus:border-white/40 text-white pr-10"
-                      required
-                      minLength={12}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      className="ml-4 bg-white text-black hover:bg-gray-200"
                     >
-                      {showNewPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
+                      Change Password
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-zinc-900 border border-white/10">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-white">
+                        Change Password
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="text-gray-400">
+                        Update your password to keep your account secure
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
 
-                <div>
-                  <label className="text-sm text-gray-300 block mb-1.5">
-                    Confirm New Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      value={passwordData.confirmPassword}
-                      onChange={(e) =>
-                        setPasswordData({
-                          ...passwordData,
-                          confirmPassword: e.target.value,
-                        })
-                      }
-                      className="w-full px-3 py-2 bg-black border border-white/20 rounded-md focus:outline-none focus:border-white/40 text-white pr-10"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
+                    <form onSubmit={handleChangePassword} className="space-y-3">
+                      <div>
+                        <label className="text-sm text-gray-300 block mb-1.5">
+                          Current Password
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showCurrentPassword ? "text" : "password"}
+                            value={passwordData.currentPassword}
+                            onChange={(e) =>
+                              setPasswordData({
+                                ...passwordData,
+                                currentPassword: e.target.value,
+                              })
+                            }
+                            className="w-full px-3 py-2 bg-black border border-white/20 rounded-md focus:outline-none focus:border-white/40 text-white pr-10"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowCurrentPassword(!showCurrentPassword)
+                            }
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                          >
+                            {showCurrentPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
 
-                <Button
-                  type="submit"
-                  disabled={isChangingPassword}
-                  className="bg-white text-black hover:bg-gray-200"
-                >
-                  {isChangingPassword ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Changing Password...
-                    </>
-                  ) : (
-                    "Change Password"
-                  )}
-                </Button>
-              </form>
+                      <div>
+                        <label className="text-sm text-gray-300 block mb-1.5">
+                          New Password (min 12 characters)
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showNewPassword ? "text" : "password"}
+                            value={passwordData.newPassword}
+                            onChange={(e) =>
+                              setPasswordData({
+                                ...passwordData,
+                                newPassword: e.target.value,
+                              })
+                            }
+                            className="w-full px-3 py-2 bg-black border border-white/20 rounded-md focus:outline-none focus:border-white/40 text-white pr-10"
+                            required
+                            minLength={12}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                          >
+                            {showNewPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-gray-300 block mb-1.5">
+                          Confirm New Password
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            value={passwordData.confirmPassword}
+                            onChange={(e) =>
+                              setPasswordData({
+                                ...passwordData,
+                                confirmPassword: e.target.value,
+                              })
+                            }
+                            className="w-full px-3 py-2 bg-black border border-white/20 rounded-md focus:outline-none focus:border-white/40 text-white pr-10"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <AlertDialogFooter>
+                        <AlertDialogCancel
+                          onClick={() => {
+                            setPasswordData({
+                              currentPassword: "",
+                              newPassword: "",
+                              confirmPassword: "",
+                            });
+                          }}
+                          className="bg-zinc-800 text-white border-white/10 hover:bg-zinc-700"
+                        >
+                          Cancel
+                        </AlertDialogCancel>
+                        <Button
+                          type="submit"
+                          disabled={isChangingPassword}
+                          className="bg-white text-black hover:bg-gray-200"
+                        >
+                          {isChangingPassword ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Changing...
+                            </>
+                          ) : (
+                            "Update Password"
+                          )}
+                        </Button>
+                      </AlertDialogFooter>
+                    </form>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </div>
 

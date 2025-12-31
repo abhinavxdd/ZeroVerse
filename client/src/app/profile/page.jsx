@@ -11,6 +11,7 @@ import {
   MessageCircle,
   ThumbsUp,
   ThumbsDown,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -105,6 +106,13 @@ export default function ProfilePage() {
                 <span>Joined {joinDate}</span>
               </div>
             </div>
+
+            <Link href="/settings">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Settings className="h-4 w-4" />
+                Settings
+              </Button>
+            </Link>
           </div>
 
           {/* Stats */}

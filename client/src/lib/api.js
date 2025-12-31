@@ -60,6 +60,19 @@ export const authAPI = {
   getProfile: async () => {
     return apiRequest("/auth/profile");
   },
+
+  changePassword: async (passwordData) => {
+    return apiRequest("/auth/change-password", {
+      method: "PUT",
+      body: JSON.stringify(passwordData),
+    });
+  },
+
+  deleteAccount: async () => {
+    return apiRequest("/auth/delete-account", {
+      method: "DELETE",
+    });
+  },
 };
 
 // Posts API calls
