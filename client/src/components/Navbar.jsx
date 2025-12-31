@@ -101,9 +101,11 @@ const Navbar = () => {
                       Profile
                     </DropdownMenuItem>
                   </Link>
-                  <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white cursor-pointer">
-                    Settings
-                  </DropdownMenuItem>
+                  <Link href="/settings">
+                    <DropdownMenuItem className="focus:bg-zinc-800 focus:text-white cursor-pointer">
+                      Settings
+                    </DropdownMenuItem>
+                  </Link>
                   <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem
                     onClick={logout}
