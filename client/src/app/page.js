@@ -21,6 +21,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { postsAPI } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSearch } from "@/contexts/SearchContext";
@@ -436,53 +443,39 @@ function PostCard({ post, userId, router, searchQuery }) {
           </p>
         )}
 
-        {/* Media Gallery */}
+        {/* Media Carousel */}
         {post.media && post.media.length > 0 && (
-          <div
-            className={`mb-3 rounded-lg overflow-hidden ${
-              post.media.length === 1
-                ? "grid grid-cols-1"
-                : post.media.length === 2
-                ? "grid grid-cols-2 gap-1"
-                : "grid grid-cols-2 gap-1"
-            }`}
-          >
-            {post.media.slice(0, 4).map((item, index) => (
-              <div
-                key={index}
-                className="relative bg-muted/20 border border-border"
-              >
-                {item.resourceType === "image" ? (
-                  <img
-                    src={item.url}
-                    alt={`Media ${index + 1}`}
-                    className={`w-full ${
-                      post.media.length === 1 ? "max-h-[400px]" : "h-48"
-                    } object-cover`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.open(item.url, "_blank");
-                    }}
-                  />
-                ) : (
-                  <video
-                    src={item.url}
-                    controls
-                    className={`w-full ${
-                      post.media.length === 1 ? "max-h-[400px]" : "h-48"
-                    } object-cover`}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                )}
-                {index === 3 && post.media.length > 4 && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <span className="text-white text-2xl font-bold">
-                      +{post.media.length - 4}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="mb-3">
+            <Carousel className="w-full">
+              <CarouselContent>
+                {post.media.map((item, index) => (
+                  <CarouselItem key={index}>
+                    <div className="relative bg-muted/20 border border-border rounded-lg overflow-hidden">
+                      {item.resourceType === "image" ? (
+                        <img
+                          src={item.url}
+                          alt={`Media ${index + 1}`}
+                          className="w-full max-h-[400px] object-contain cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(item.url, "_blank");
+                          }}
+                        />
+                      ) : (
+                        <video
+                          src={item.url}
+                          controls
+                          className="w-full max-h-[400px] object-contain"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      )}
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-2" />
+              <CarouselNext className="right-2" />
+            </Carousel>
           </div>
         )}
 

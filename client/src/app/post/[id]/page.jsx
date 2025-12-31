@@ -17,6 +17,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -421,42 +428,35 @@ export default function PostPage() {
             </>
           )}
 
-          {/* Media Gallery */}
+          {/* Media Carousel */}
           {post.media && post.media.length > 0 && (
-            <div
-              className={`mb-4 rounded-lg overflow-hidden ${
-                post.media.length === 1
-                  ? "grid grid-cols-1"
-                  : post.media.length === 2
-                  ? "grid grid-cols-2 gap-2"
-                  : "grid grid-cols-2 gap-2"
-              }`}
-            >
-              {post.media.map((item, index) => (
-                <div
-                  key={index}
-                  className="relative bg-muted/20 border border-border rounded-lg overflow-hidden"
-                >
-                  {item.resourceType === "image" ? (
-                    <img
-                      src={item.url}
-                      alt={`Media ${index + 1}`}
-                      className={`w-full ${
-                        post.media.length === 1 ? "max-h-[500px]" : "h-64"
-                      } object-cover cursor-pointer`}
-                      onClick={() => window.open(item.url, "_blank")}
-                    />
-                  ) : (
-                    <video
-                      src={item.url}
-                      controls
-                      className={`w-full ${
-                        post.media.length === 1 ? "max-h-[500px]" : "h-64"
-                      } object-cover`}
-                    />
-                  )}
-                </div>
-              ))}
+            <div className="mb-4">
+              <Carousel className="w-full">
+                <CarouselContent>
+                  {post.media.map((item, index) => (
+                    <CarouselItem key={index}>
+                      <div className="relative bg-muted/20 border border-border rounded-lg overflow-hidden">
+                        {item.resourceType === "image" ? (
+                          <img
+                            src={item.url}
+                            alt={`Media ${index + 1}`}
+                            className="w-full max-h-[500px] object-contain cursor-pointer"
+                            onClick={() => window.open(item.url, "_blank")}
+                          />
+                        ) : (
+                          <video
+                            src={item.url}
+                            controls
+                            className="w-full max-h-[500px] object-contain"
+                          />
+                        )}
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-2" />
+                <CarouselNext className="right-2" />
+              </Carousel>
             </div>
           )}
 
