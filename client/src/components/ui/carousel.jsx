@@ -175,7 +175,7 @@ function CarouselPrevious({
       }}
       {...props}
     >
-      <span className="text-lg font-bold">&lt;</span>
+      <ArrowLeft className="h-4 w-4" />
       <span className="sr-only">Previous slide</span>
     </Button>
   );
@@ -209,7 +209,7 @@ function CarouselNext({
       }}
       {...props}
     >
-      <span className="text-lg font-bold">&gt;</span>
+      <ArrowRight className="h-4 w-4" />
       <span className="sr-only">Next slide</span>
     </Button>
   );
