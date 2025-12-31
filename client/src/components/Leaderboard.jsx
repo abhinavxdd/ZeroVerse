@@ -6,6 +6,15 @@ import { Trophy, TrendingUp, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Leaderboard() {
+//   Temporary fake data for testing
+//   const [leaderboard, setLeaderboard] = useState([
+//     { _id: "1", alias: "CodeNinja", totalPosts: 45, totalLikes: 523 },
+//     { _id: "2", alias: "TechGuru", totalPosts: 38, totalLikes: 487 },
+//     { _id: "3", alias: "DataWizard", totalPosts: 42, totalLikes: 412 },
+//   ]);
+//   const [loading, setLoading] = useState(false);
+
+  // Real data
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
 
