@@ -114,7 +114,7 @@ export default function SettingsPage() {
       <div className="container mx-auto max-w-4xl px-4 py-8">
         {/* Header */}
         <div className="mb-6 flex items-center gap-3">
-          <Link href="/profile">
+          <Link href="/">
             <Button variant="ghost" size="icon" className="hover:bg-zinc-800">
               <ArrowLeft className="h-5 w-5" />
             </Button>
