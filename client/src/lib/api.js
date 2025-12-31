@@ -8,10 +8,14 @@ async function apiRequest(endpoint, options = {}) {
   const config = {
     ...options,
     headers: {
-      "Content-Type": "application/json",
       ...options.headers,
     },
   };
+
+  // Only set Content-Type if not already set and body is not FormData
+  if (!config.headers["Content-Type"] && !(options.body instanceof FormData)) {
+    config.headers["Content-Type"] = "application/json";
+  }
 
   // Add auth token if available
   const token = localStorage.getItem("token");
@@ -82,10 +86,22 @@ export const postsAPI = {
   },
 
   createPost: async (postData) => {
-    return apiRequest("/posts", {
+    // Check if postData is FormData (for file uploads)
+    const isFormData = postData instanceof FormData;
+
+    const options = {
       method: "POST",
-      body: JSON.stringify(postData),
-    });
+      body: isFormData ? postData : JSON.stringify(postData),
+    };
+
+    // Don't set Content-Type for FormData - browser will set it with boundary
+    if (!isFormData) {
+      options.headers = {
+        "Content-Type": "application/json",
+      };
+    }
+
+    return apiRequest("/posts", options);
   },
 
   likePost: async (postId) => {
