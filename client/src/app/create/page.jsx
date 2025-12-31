@@ -116,7 +116,18 @@ export default function CreatePostPage() {
 
     setSubmitting(true);
     try {
-      await postsAPI.createPost({ title, content, category });
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("content", content);
+      formData.append("category", category);
+
+      // Append media files
+      mediaFiles.forEach((file) => {
+        formData.append("media", file);
+      });
+
+      await postsAPI.createPost(formData);
+      toast.success("Post created successfully!");
       router.push("/");
     } catch (error) {
       console.error("Error creating post:", error);
