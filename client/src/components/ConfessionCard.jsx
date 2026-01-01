@@ -12,8 +12,7 @@ export default function ConfessionCard() {
   const { user } = useAuth();
 
   const handleConfessClick = () => {
-    // TODO: Redirect to confession page when created
-    toast.info("Confession page coming soon!");
+    router.push("/confessions");
   };
 
   return (
@@ -55,7 +54,7 @@ export default function ConfessionCard() {
           className="w-full bg-white/5 hover:bg-white/10 text-white border border-pink-500/30 hover:border-pink-500/50 transition-all duration-300 hover:scale-[1.02] cursor-pointer"
         >
           <MessageCircleHeart className="h-4 w-4 mr-2" />
-          Share Your Confession
+          View Confessions
         </Button>
 
         {/* Footer note */}
