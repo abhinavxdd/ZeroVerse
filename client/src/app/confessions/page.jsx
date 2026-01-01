@@ -325,9 +325,6 @@ function ConfessionCard({ confession, user, router, onUpdate }) {
                     ? "Anonymous User"
                     : confession.author?.alias || "Anonymous"}
                 </p>
-                <span className="px-2 py-0.5 bg-pink-500/20 text-pink-400 text-xs rounded-full border border-pink-500/30">
-                  Anonymous
-                </span>
               </div>
               <p className="text-xs text-gray-500">
                 {new Date(confession.createdAt).toLocaleDateString()}
