@@ -337,3 +337,106 @@ exports.resendOTP = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+// Forgot Password - Send OTP for password reset
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "No account found with this email" });
+    }
+
+    if (!user.isEmailVerified) {
+      return res.status(400).json({
+        message: "Please complete your signup verification first",
+      });
+    }
+
+    // Generate OTP for password reset
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
+
+    // Send OTP email
+    const emailResult = await sendOTPEmail(email, otp);
+    if (!emailResult.success) {
+      return res.status(500).json({ message: "Failed to send OTP email" });
+    }
+
+    res.status(200).json({
+      message: "OTP sent to your email for password reset",
+      userId: user._id,
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+// Reset Password - Verify OTP and set new password
+exports.resetPassword = async (req, res) => {
+  try {
+    const { userId, otp, newPassword } = req.body;
+
+    if (!userId || !otp || !newPassword) {
+      return res.status(400).json({
+        message: "User ID, OTP, and new password are required",
+      });
+    }
+
+    if (newPassword.length < 12) {
+      return res.status(400).json({
+        message: "Password must be at least 12 characters",
+      });
+    }
+
+    // Find user and include OTP fields
+    const user = await User.findById(userId).select("+otp +otpExpires");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.otp || !user.otpExpires) {
+      return res.status(400).json({
+        message: "No OTP found. Please request a new one.",
+      });
+    }
+
+    // Check if OTP has expired
+    if (new Date() > user.otpExpires) {
+      return res.status(400).json({
+        message: "OTP has expired. Please request a new one.",
+      });
+    }
+
+    // Verify OTP
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Update password and clear OTP
+    user.password = newPassword;
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    await user.save();
+
+    res.status(200).json({
+      message:
+        "Password reset successful. You can now login with your new password.",
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
