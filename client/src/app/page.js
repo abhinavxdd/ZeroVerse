@@ -61,7 +61,7 @@ export default function HomePage() {
     fetchPosts();
   }, []);
 
-  // Filter posts by category and search
+  // Filter posts by category and search (exclude confessions)
   let filteredPosts = posts.filter((post) => {
     const matchesCategory = selectedCategory
       ? post.category === selectedCategory
@@ -70,7 +70,8 @@ export default function HomePage() {
       ? post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.content?.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
-    return matchesCategory && matchesSearch;
+    const isNotConfession = post.category !== "Confession";
+    return matchesCategory && matchesSearch && isNotConfession;
   });
 
   // Sort posts if needed

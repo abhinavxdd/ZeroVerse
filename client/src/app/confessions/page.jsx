@@ -11,10 +11,29 @@ import {
   Sparkles,
   PlusCircle,
   Lock,
+  MoreVertical,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { postsAPI } from "@/lib/api";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { postsAPI, confessionsAPI } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -122,6 +141,23 @@ export default function ConfessionsPage() {
               confession={confession}
               userId={user?.id}
               router={router}
+              onUpdate={() => {
+                // Refetch confessions after edit/delete
+                const fetchConfessions = async () => {
+                  try {
+                    const data = await postsAPI.getAllPosts();
+                    const confessionPosts = data.filter(
+                      (post) =>
+                        post.category === "Confession" &&
+                        post.status === "approved"
+                    );
+                    setConfessions(confessionPosts);
+                  } catch (error) {
+                    console.error("Error refetching confessions:", error);
+                  }
+                };
+                fetchConfessions();
+              }}
             />
           ))}
         </div>
@@ -130,14 +166,21 @@ export default function ConfessionsPage() {
   );
 }
 
-function ConfessionCard({ confession, userId, router }) {
+function ConfessionCard({ confession, userId, router, onUpdate }) {
   const [likes, setLikes] = useState(confession.likes || []);
   const [dislikes, setDislikes] = useState(confession.dislikes || []);
   const [isLiking, setIsLiking] = useState(false);
   const [isDisliking, setIsDisliking] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editTitle, setEditTitle] = useState(confession.title);
+  const [editContent, setEditContent] = useState(confession.content);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const hasLiked = userId && likes.includes(userId);
   const hasDisliked = userId && dislikes.includes(userId);
+  const isOwner = userId && confession.userId === userId;
 
   const handleLike = async () => {
     if (!userId) {
@@ -195,112 +238,279 @@ function ConfessionCard({ confession, userId, router }) {
     toast.success("Link copied to clipboard!");
   };
 
+  const handleEdit = async () => {
+    if (!editTitle.trim() || !editContent.trim()) {
+      toast.error("Title and content cannot be empty");
+      return;
+    }
+
+    setIsEditing(true);
+    try {
+      const result = await confessionsAPI.updateConfession(
+        confession._id,
+        editTitle,
+        editContent
+      );
+
+      if (result.success) {
+        if (result.status === "pending") {
+          toast.warning(result.message || "Your confession is pending review");
+        } else {
+          toast.success(result.message || "Confession updated!");
+        }
+        setShowEditDialog(false);
+        onUpdate(); // Refresh the list
+      }
+    } catch (error) {
+      console.error("Error editing confession:", error);
+      toast.error(error.message || "Failed to update confession");
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await confessionsAPI.deleteConfession(confession._id);
+      toast.success("Confession deleted successfully");
+      setShowDeleteDialog(false);
+      onUpdate(); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting confession:", error);
+      toast.error(error.message || "Failed to delete confession");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <div
-      onClick={() => router.push(`/post/${confession._id}`)}
-      className="bg-zinc-900 border border-pink-500/20 rounded-lg p-5 hover:border-pink-500/40 transition-all cursor-pointer"
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 border-2 border-pink-500/30">
-            <AvatarFallback className="bg-gradient-to-br from-pink-500/20 to-rose-500/20 text-pink-400 font-semibold">
-              {confession.author?.alias === "Anonymous User"
-                ? "AU"
-                : confession.author?.alias?.[0]?.toUpperCase() || "A"}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="font-semibold text-white">
+    <>
+      <div
+        onClick={() => router.push(`/post/${confession._id}`)}
+        className="bg-zinc-900 border border-pink-500/20 rounded-lg p-5 hover:border-pink-500/40 transition-all cursor-pointer"
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10 border-2 border-pink-500/30">
+              <AvatarFallback className="bg-gradient-to-br from-pink-500/20 to-rose-500/20 text-pink-400 font-semibold">
                 {confession.author?.alias === "Anonymous User"
-                  ? "Anonymous User"
-                  : confession.author?.alias || "Anonymous"}
+                  ? "AU"
+                  : confession.author?.alias?.[0]?.toUpperCase() || "A"}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-white">
+                  {confession.author?.alias === "Anonymous User"
+                    ? "Anonymous User"
+                    : confession.author?.alias || "Anonymous"}
+                </p>
+                <span className="px-2 py-0.5 bg-pink-500/20 text-pink-400 text-xs rounded-full border border-pink-500/30">
+                  Anonymous
+                </span>
+              </div>
+              <p className="text-xs text-gray-500">
+                {new Date(confession.createdAt).toLocaleDateString()}
+                {confession.isEdited && (
+                  <span className="ml-2 text-gray-400 italic">(edited)</span>
+                )}
               </p>
-              <span className="px-2 py-0.5 bg-pink-500/20 text-pink-400 text-xs rounded-full border border-pink-500/30">
-                Anonymous
-              </span>
             </div>
-            <p className="text-xs text-gray-500">
-              {new Date(confession.createdAt).toLocaleDateString()}
-            </p>
           </div>
+
+          {/* Dropdown menu for edit/delete (only for owner) */}
+          {isOwner && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 hover:bg-zinc-800"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowEditDialog(true);
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowDeleteDialog(true);
+                  }}
+                  className="cursor-pointer text-red-500 focus:text-red-500"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+
+        {/* Title */}
+        <h2 className="text-lg font-semibold text-white mb-2">
+          {confession.title}
+        </h2>
+
+        {/* Content */}
+        <p className="text-gray-300 text-sm leading-relaxed mb-4 whitespace-pre-wrap">
+          {confession.content}
+        </p>
+
+        {/* Action Bar */}
+        <div className="flex items-center gap-2 text-gray-400">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleLike();
+            }}
+            disabled={isLiking}
+            className={`gap-1.5 h-9 px-3 text-sm hover:bg-pink-500/10 rounded-full transition-colors ${
+              hasLiked
+                ? "text-pink-500 hover:text-pink-600"
+                : "hover:text-pink-400"
+            }`}
+          >
+            <ThumbsUp className={`w-4 h-4 ${hasLiked ? "fill-current" : ""}`} />
+            <span>{likes.length}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDislike();
+            }}
+            disabled={isDisliking}
+            className={`gap-1.5 h-9 px-3 text-sm hover:bg-red-500/10 rounded-full transition-colors ${
+              hasDisliked
+                ? "text-red-500 hover:text-red-600"
+                : "hover:text-red-400"
+            }`}
+          >
+            <ThumbsDown
+              className={`w-4 h-4 ${hasDisliked ? "fill-current" : ""}`}
+            />
+            <span>{dislikes.length}</span>
+          </Button>
+          <div className="w-px h-6 bg-border mx-1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/post/${confession._id}`);
+            }}
+            className="gap-2 h-9 px-3 text-sm hover:bg-muted rounded-full"
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>{confession.comments?.length || 0}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleShare();
+            }}
+            className="gap-2 h-9 px-3 text-sm hover:bg-muted rounded-full"
+          >
+            <Share2 className="w-4 h-4" /> Share
+          </Button>
         </div>
       </div>
 
-      {/* Title */}
-      <h2 className="text-lg font-semibold text-white mb-2">
-        {confession.title}
-      </h2>
+      {/* Edit Dialog */}
+      <AlertDialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <AlertDialogContent className="bg-zinc-900 border-zinc-800">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              Edit Confession
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Your edited confession will be re-moderated by AI. Make your
+              changes below.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="text-sm font-medium text-gray-300 mb-2 block">
+                Title
+              </label>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-pink-500"
+                maxLength={100}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-300 mb-2 block">
+                Content
+              </label>
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-pink-500 min-h-[120px]"
+                rows={5}
+              />
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-zinc-800 text-white hover:bg-zinc-700">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleEdit}
+              disabled={isEditing}
+              className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
+            >
+              {isEditing ? "Updating..." : "Update Confession"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Content */}
-      <p className="text-gray-300 text-sm leading-relaxed mb-4 whitespace-pre-wrap">
-        {confession.content}
-      </p>
-
-      {/* Action Bar */}
-      <div className="flex items-center gap-2 text-gray-400">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleLike();
-          }}
-          disabled={isLiking}
-          className={`gap-1.5 h-9 px-3 text-sm hover:bg-pink-500/10 rounded-full transition-colors ${
-            hasLiked
-              ? "text-pink-500 hover:text-pink-600"
-              : "hover:text-pink-400"
-          }`}
-        >
-          <ThumbsUp className={`w-4 h-4 ${hasLiked ? "fill-current" : ""}`} />
-          <span>{likes.length}</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDislike();
-          }}
-          disabled={isDisliking}
-          className={`gap-1.5 h-9 px-3 text-sm hover:bg-red-500/10 rounded-full transition-colors ${
-            hasDisliked
-              ? "text-red-500 hover:text-red-600"
-              : "hover:text-red-400"
-          }`}
-        >
-          <ThumbsDown
-            className={`w-4 h-4 ${hasDisliked ? "fill-current" : ""}`}
-          />
-          <span>{dislikes.length}</span>
-        </Button>
-        <div className="w-px h-6 bg-border mx-1" />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            router.push(`/post/${confession._id}`);
-          }}
-          className="gap-2 h-9 px-3 text-sm hover:bg-muted rounded-full"
-        >
-          <MessageSquare className="w-4 h-4" />
-          <span>{confession.comments?.length || 0}</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleShare();
-          }}
-          className="gap-2 h-9 px-3 text-sm hover:bg-muted rounded-full"
-        >
-          <Share2 className="w-4 h-4" /> Share
-        </Button>
-      </div>
-    </div>
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="bg-zinc-900 border-zinc-800">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              Delete Confession
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Are you sure you want to delete this confession? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-zinc-800 text-white hover:bg-zinc-700">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

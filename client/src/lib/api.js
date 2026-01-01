@@ -167,6 +167,19 @@ export const confessionsAPI = {
     });
   },
 
+  updateConfession: async (confessionId, title, content) => {
+    return apiRequest(`/confessions/${confessionId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ title, content }),
+    });
+  },
+
+  deleteConfession: async (confessionId) => {
+    return apiRequest(`/confessions/${confessionId}`, {
+      method: "DELETE",
+    });
+  },
+
   getPendingConfessions: async () => {
     return apiRequest("/confessions/pending");
   },
