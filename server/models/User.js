@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -33,6 +37,11 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre("save", async function (next) {
+  // Set admin status for specific email
+  if (this.email === "22dec002@nith.ac.in") {
+    this.isAdmin = true;
+  }
+
   // Only hash if password is new or modified
   if (!this.isModified("password")) return next();
 

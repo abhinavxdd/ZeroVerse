@@ -139,7 +139,7 @@ export default function ConfessionsPage() {
             <ConfessionCard
               key={confession._id}
               confession={confession}
-              userId={user?.id}
+              user={user}
               router={router}
               onUpdate={() => {
                 // Refetch confessions after edit/delete
@@ -166,7 +166,7 @@ export default function ConfessionsPage() {
   );
 }
 
-function ConfessionCard({ confession, userId, router, onUpdate }) {
+function ConfessionCard({ confession, user, router, onUpdate }) {
   const [likes, setLikes] = useState(confession.likes || []);
   const [dislikes, setDislikes] = useState(confession.dislikes || []);
   const [isLiking, setIsLiking] = useState(false);
@@ -178,9 +178,11 @@ function ConfessionCard({ confession, userId, router, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const userId = user?.id;
   const hasLiked = userId && likes.includes(userId);
   const hasDisliked = userId && dislikes.includes(userId);
   const isOwner = userId && confession.userId === userId;
+  const canDelete = isOwner || user?.isAdmin;
 
   const handleLike = async () => {
     if (!userId) {
@@ -320,8 +322,8 @@ function ConfessionCard({ confession, userId, router, onUpdate }) {
             </div>
           </div>
 
-          {/* Dropdown menu for edit/delete (only for owner) */}
-          {isOwner && (
+          {/* Dropdown menu for edit/delete (for owner or admin) */}
+          {canDelete && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                 <Button
@@ -333,16 +335,18 @@ function ConfessionCard({ confession, userId, router, onUpdate }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowEditDialog(true);
-                  }}
-                  className="cursor-pointer"
-                >
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
+                {isOwner && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowEditDialog(true);
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();

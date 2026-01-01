@@ -38,6 +38,7 @@ exports.signup = async (req, res) => {
         id: user._id,
         email: user.email,
         alias: user.alias,
+        isAdmin: user.isAdmin || false,
       },
     });
   } catch (err) {
@@ -72,6 +73,7 @@ exports.login = async (req, res) => {
         id: user._id,
         email: user.email,
         alias: user.alias,
+        isAdmin: user.isAdmin || false,
       },
     });
   } catch (err) {
@@ -109,6 +111,7 @@ exports.getUserProfile = async (req, res) => {
         email: user.email,
         alias: user.alias,
         createdAt: user.createdAt,
+        isAdmin: user.isAdmin || false,
       },
       stats: {
         totalPosts: posts.length,

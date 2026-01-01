@@ -178,6 +178,7 @@ exports.deletePost = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.user._id;
+    const isAdmin = req.user.isAdmin;
 
     const post = await Post.findById(postId);
 
@@ -185,8 +186,8 @@ exports.deletePost = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    // Check if user is the owner of the post
-    if (post.userId.toString() !== userId.toString()) {
+    // Check if user is the owner of the post OR is an admin
+    if (post.userId.toString() !== userId.toString() && !isAdmin) {
       return res
         .status(403)
         .json({ message: "Not authorized to delete this post" });
@@ -203,6 +204,7 @@ exports.deleteComment = async (req, res) => {
   try {
     const { id: postId, commentId } = req.params;
     const userId = req.user._id;
+    const isAdmin = req.user.isAdmin;
 
     const post = await Post.findById(postId);
 
@@ -216,8 +218,8 @@ exports.deleteComment = async (req, res) => {
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    // Check if user is the owner of the comment
-    if (comment.userId.toString() !== userId.toString()) {
+    // Check if user is the owner of the comment OR is an admin
+    if (comment.userId.toString() !== userId.toString() && !isAdmin) {
       return res
         .status(403)
         .json({ message: "Not authorized to delete this comment" });

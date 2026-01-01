@@ -418,6 +418,7 @@ exports.deleteConfession = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user._id;
+    const isAdmin = req.user.isAdmin;
 
     // Find the confession
     const confession = await Post.findById(id);
@@ -425,8 +426,8 @@ exports.deleteConfession = async (req, res) => {
       return res.status(404).json({ message: "Confession not found" });
     }
 
-    // Check if user owns this confession
-    if (confession.userId.toString() !== userId.toString()) {
+    // Check if user owns this confession OR is an admin
+    if (confession.userId.toString() !== userId.toString() && !isAdmin) {
       return res.status(403).json({
         message: "You can only delete your own confessions",
       });

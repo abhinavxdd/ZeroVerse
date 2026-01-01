@@ -349,18 +349,20 @@ export default function PostPage() {
                 </span>
               </>
             )}
-            {user?.id === post.userId && (
+            {(user?.id === post.userId || user?.isAdmin) && (
               <div className="ml-auto flex gap-1">
                 {!isEditingPost && (
                   <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleEditPost}
-                      className="h-7 w-7 p-0 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
+                    {user?.id === post.userId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleEditPost}
+                        className="h-7 w-7 p-0 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -598,17 +600,19 @@ export default function PostPage() {
                           (edited)
                         </span>
                       )}
-                      {user?.id === comment.userId &&
+                      {(user?.id === comment.userId || user?.isAdmin) &&
                         editingCommentId !== comment._id && (
                           <div className="ml-auto flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditComment(comment)}
-                              className="h-6 w-6 p-0 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
-                            >
-                              <Edit2 className="h-3 w-3" />
-                            </Button>
+                            {user?.id === comment.userId && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditComment(comment)}
+                                className="h-6 w-6 p-0 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
+                              >
+                                <Edit2 className="h-3 w-3" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
