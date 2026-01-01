@@ -43,15 +43,16 @@ export default function ConfessPage() {
         title: title.trim(),
         content: content.trim(),
         category: "Confession",
+        isAnonymous: true, // Mark as fully anonymous
       });
 
       toast.success("Your confession has been shared anonymously! 🤫");
       setTitle("");
       setContent("");
 
-      // Redirect to home after a short delay
+      // Redirect to confessions page after a short delay
       setTimeout(() => {
-        router.push("/");
+        router.push("/confessions");
       }, 1500);
     } catch (error) {
       console.error("Error creating confession:", error);

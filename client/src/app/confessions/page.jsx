@@ -205,13 +205,17 @@ function ConfessionCard({ confession, userId, router }) {
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 border-2 border-pink-500/30">
             <AvatarFallback className="bg-gradient-to-br from-pink-500/20 to-rose-500/20 text-pink-400 font-semibold">
-              {confession.author?.alias?.[0]?.toUpperCase() || "A"}
+              {confession.author?.alias === "Anonymous User"
+                ? "AU"
+                : confession.author?.alias?.[0]?.toUpperCase() || "A"}
             </AvatarFallback>
           </Avatar>
           <div>
             <div className="flex items-center gap-2">
               <p className="font-semibold text-white">
-                {confession.author?.alias || "Anonymous"}
+                {confession.author?.alias === "Anonymous User"
+                  ? "Anonymous User"
+                  : confession.author?.alias || "Anonymous"}
               </p>
               <span className="px-2 py-0.5 bg-pink-500/20 text-pink-400 text-xs rounded-full border border-pink-500/30">
                 Anonymous

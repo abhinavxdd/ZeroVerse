@@ -20,14 +20,17 @@ exports.createPost = async (req, res) => {
     console.log("Request files:", req.files);
 
     // Get the data sent from frontend (title, content, category)
-    const { title, content, category } = req.body;
+    const { title, content, category, isAnonymous } = req.body;
 
     const postData = {
       title,
       content,
       category,
       userId: req.user._id,
-      alias: req.user.alias,
+      alias:
+        isAnonymous === "true" || isAnonymous === true
+          ? "Anonymous User"
+          : req.user.alias,
     };
 
     // Handle uploaded files
