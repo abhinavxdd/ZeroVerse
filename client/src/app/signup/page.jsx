@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { authAPI } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -16,7 +17,6 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  const { login } = useAuth();
   const router = useRouter();
 
   const handleSignup = async (e) => {
@@ -41,25 +41,12 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUserId(data.userId);
-        setShowOtpForm(true);
-        setError("");
-      } else {
-        setError(data.message || "Signup failed");
-      }
+      const data = await authAPI.signup(email, password);
+      setUserId(data.userId);
+      setShowOtpForm(true);
+      setError("");
     } catch (err) {
-      setError("Network error. Please try again.");
+      setError(err.message || "Signup failed");
     }
     setLoading(false);
   };
@@ -75,29 +62,13 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/auth/verify-otp",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId, otp }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Store token and login
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        router.push("/");
-      } else {
-        setError(data.message || "OTP verification failed");
-      }
+      const data = await authAPI.verifyOTP(userId, otp);
+      // Store token and login
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      router.push("/");
     } catch (err) {
-      setError("Network error. Please try again.");
+      setError(err.message || "OTP verification failed");
     }
     setLoading(false);
   };
@@ -107,28 +78,10 @@ export default function SignupPage() {
     setResendLoading(true);
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/auth/resend-otp",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setError("");
-        // Show success message
-        alert("OTP resent successfully! Check your email.");
-      } else {
-        setError(data.message || "Failed to resend OTP");
-      }
+      await authAPI.resendOTP(userId);
+      toast.success("OTP resent successfully! Check your email.");
     } catch (err) {
-      setError("Network error. Please try again.");
+      setError(err.message || "Failed to resend OTP");
     }
     setResendLoading(false);
   };

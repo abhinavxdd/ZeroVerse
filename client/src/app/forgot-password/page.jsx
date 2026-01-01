@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { authAPI } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function ForgotPasswordPage() {
@@ -29,28 +30,12 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/auth/forgot-password",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUserId(data.userId);
-        setStep(2);
-        setError("");
-      } else {
-        setError(data.message || "Failed to send OTP");
-      }
+      const data = await authAPI.forgotPassword(email);
+      setUserId(data.userId);
+      setStep(2);
+      setError("");
     } catch (err) {
-      setError("Network error. Please try again.");
+      setError(err.message || "Failed to send OTP");
     }
     setLoading(false);
   };
@@ -83,29 +68,13 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/auth/reset-password",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId, otp, newPassword }),
-        }
+      await authAPI.resetPassword(userId, otp, newPassword);
+      toast.success(
+        "Password reset successful! You can now login with your new password."
       );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success(
-          "Password reset successful! You can now login with your new password."
-        );
-        setTimeout(() => router.push("/login"), 1500);
-      } else {
-        setError(data.message || "Failed to reset password");
-      }
+      setTimeout(() => router.push("/login"), 1500);
     } catch (err) {
-      setError("Network error. Please try again.");
+      setError(err.message || "Failed to reset password");
     }
     setLoading(false);
   };
@@ -115,27 +84,11 @@ export default function ForgotPasswordPage() {
     setResendLoading(true);
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/auth/forgot-password",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUserId(data.userId);
-        toast.success("OTP resent successfully! Check your email.");
-      } else {
-        setError(data.message || "Failed to resend OTP");
-      }
+      const data = await authAPI.forgotPassword(email);
+      setUserId(data.userId);
+      toast.success("OTP resent successfully! Check your email.");
     } catch (err) {
-      setError("Network error. Please try again.");
+      setError(err.message || "Failed to resend OTP");
     }
     setResendLoading(false);
   };

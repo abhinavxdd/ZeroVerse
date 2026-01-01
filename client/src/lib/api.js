@@ -77,6 +77,36 @@ export const authAPI = {
       method: "DELETE",
     });
   },
+
+  // OTP verification endpoints
+  verifyOTP: async (userId, otp) => {
+    return apiRequest("/auth/verify-otp", {
+      method: "POST",
+      body: JSON.stringify({ userId, otp }),
+    });
+  },
+
+  resendOTP: async (userId) => {
+    return apiRequest("/auth/resend-otp", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  },
+
+  // Password reset endpoints
+  forgotPassword: async (email) => {
+    return apiRequest("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  resetPassword: async (userId, otp, newPassword) => {
+    return apiRequest("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ userId, otp, newPassword }),
+    });
+  },
 };
 
 // Posts API calls
