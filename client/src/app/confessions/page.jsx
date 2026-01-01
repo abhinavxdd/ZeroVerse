@@ -35,12 +35,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { postsAPI, confessionsAPI } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSearch } from "@/contexts/SearchContext";
 import { toast } from "sonner";
 
 export default function ConfessionsPage() {
   const [confessions, setConfessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { searchQuery } = useSearch();
   const router = useRouter();
 
   useEffect(() => {
@@ -61,6 +63,16 @@ export default function ConfessionsPage() {
 
     fetchConfessions();
   }, []);
+
+  // Filter confessions by search query
+  const filteredConfessions = confessions.filter((confession) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      confession.title.toLowerCase().includes(query) ||
+      confession.content?.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <div className="container mx-auto max-w-4xl px-5 py-8">
@@ -113,7 +125,7 @@ export default function ConfessionsPage() {
         <div className="text-center py-12 text-gray-400">
           Loading confessions...
         </div>
-      ) : confessions.length === 0 ? (
+      ) : filteredConfessions.length === 0 ? (
         <div className="text-center py-16">
           <div className="flex justify-center mb-4">
             <div className="p-6 bg-pink-500/10 rounded-full">
@@ -121,21 +133,25 @@ export default function ConfessionsPage() {
             </div>
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">
-            No confessions yet
+            {searchQuery ? "No confessions found" : "No confessions yet"}
           </h3>
           <p className="text-gray-400 mb-6">
-            Be the first to share your thoughts anonymously
+            {searchQuery
+              ? `No confessions match "${searchQuery}"`
+              : "Be the first to share your thoughts anonymously"}
           </p>
-          <Button
-            onClick={() => router.push("/confess")}
-            className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white"
-          >
-            Share Your Confession
-          </Button>
+          {!searchQuery && (
+            <Button
+              onClick={() => router.push("/confess")}
+              className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white"
+            >
+              Share Your Confession
+            </Button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
-          {confessions.map((confession) => (
+          {filteredConfessions.map((confession) => (
             <ConfessionCard
               key={confession._id}
               confession={confession}
