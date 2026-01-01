@@ -28,9 +28,9 @@ export default function ConfessionsPage() {
     const fetchConfessions = async () => {
       try {
         const data = await postsAPI.getAllPosts();
-        // Filter only confession posts
+        // Filter only approved confession posts
         const confessionPosts = data.filter(
-          (post) => post.category === "Confession"
+          (post) => post.category === "Confession" && post.status === "approved"
         );
         setConfessions(confessionPosts);
       } catch (error) {

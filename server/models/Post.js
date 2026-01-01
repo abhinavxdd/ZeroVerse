@@ -14,8 +14,21 @@ const postSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, "Please specify a category"],
-    enum: ["General", "Hostel", "Exams", "Gossip", "Placements"],
+    enum: ["General", "Hostel", "Exams", "Gossip", "Placements", "Confession"],
     default: "General",
+  },
+  isAnonymous: {
+    type: Boolean,
+    default: false,
+  },
+  status: {
+    type: String,
+    enum: ["approved", "pending", "rejected"],
+    default: "approved",
+  },
+  aiModerationReason: {
+    type: String,
+    default: null,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,

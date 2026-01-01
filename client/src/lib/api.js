@@ -157,3 +157,29 @@ export const postsAPI = {
     return apiRequest("/posts/leaderboard");
   },
 };
+
+// Confessions API calls (AI-moderated)
+export const confessionsAPI = {
+  createConfession: async (title, content) => {
+    return apiRequest("/confessions", {
+      method: "POST",
+      body: JSON.stringify({ title, content }),
+    });
+  },
+
+  getPendingConfessions: async () => {
+    return apiRequest("/confessions/pending");
+  },
+
+  approveConfession: async (confessionId) => {
+    return apiRequest(`/confessions/${confessionId}/approve`, {
+      method: "PATCH",
+    });
+  },
+
+  rejectConfession: async (confessionId) => {
+    return apiRequest(`/confessions/${confessionId}/reject`, {
+      method: "DELETE",
+    });
+  },
+};

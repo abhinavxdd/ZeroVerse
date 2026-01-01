@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { postsAPI } from "@/lib/api";
+import { confessionsAPI } from "@/lib/api";
 import { toast } from "sonner";
 import { MessageCircleHeart, Lock, Sparkles, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,14 +39,24 @@ export default function ConfessPage() {
     setIsSubmitting(true);
 
     try {
-      await postsAPI.createPost({
-        title: title.trim(),
-        content: content.trim(),
-        category: "Confession",
-        isAnonymous: true, // Mark as fully anonymous
-      });
+      const response = await confessionsAPI.createConfession(
+        title.trim(),
+        content.trim()
+      );
 
-      toast.success("Your confession has been shared anonymously! 🤫");
+      // Handle different AI moderation verdicts
+      if (response.status === "pending") {
+        toast.info(
+          "Your confession is under review and will be posted soon! 🔍",
+          {
+            description: response.reason,
+            duration: 5000,
+          }
+        );
+      } else {
+        toast.success("Your confession has been posted anonymously! 🤫");
+      }
+
       setTitle("");
       setContent("");
 
@@ -56,9 +66,16 @@ export default function ConfessPage() {
       }, 1500);
     } catch (error) {
       console.error("Error creating confession:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to share confession"
-      );
+
+      // Handle rejection from AI moderation
+      if (error.message) {
+        toast.error("Confession not allowed", {
+          description: error.message,
+          duration: 6000,
+        });
+      } else {
+        toast.error("Failed to share confession. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
