@@ -34,13 +34,15 @@ import { useSearch } from "@/contexts/SearchContext";
 import { toast } from "sonner";
 import Leaderboard from "@/components/Leaderboard";
 import ConfessionCard from "@/components/ConfessionCard";
+import Sidebar from "@/components/Sidebar";
 
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [sortBy, setSortBy] = useState(null); // null, 'popular'
   const { user } = useAuth();
-  const { searchQuery } = useSearch();
+  const { searchQuery, setSearchQuery } = useSearch();
   const router = useRouter();
 
   // Fetch posts from backend
@@ -60,7 +62,7 @@ export default function HomePage() {
   }, []);
 
   // Filter posts by category and search
-  const filteredPosts = posts.filter((post) => {
+  let filteredPosts = posts.filter((post) => {
     const matchesCategory = selectedCategory
       ? post.category === selectedCategory
       : true;
@@ -70,6 +72,15 @@ export default function HomePage() {
       : true;
     return matchesCategory && matchesSearch;
   });
+
+  // Sort posts if needed
+  if (sortBy === "popular") {
+    filteredPosts = [...filteredPosts].sort((a, b) => {
+      const aLikes = (a.likes?.length || 0) - (a.dislikes?.length || 0);
+      const bLikes = (b.likes?.length || 0) - (b.dislikes?.length || 0);
+      return bLikes - aLikes; // Most liked first
+    });
+  }
 
   const categories = ["General", "Hostel", "Exams", "Gossip", "Placements"];
 
@@ -88,119 +99,13 @@ export default function HomePage() {
     <div className="container mx-auto max-w-7xl px-4 py-6">
       <div className="flex gap-6">
         {/* Left Sidebar Navigation */}
-        <aside className="hidden lg:block w-64 sticky top-20 h-fit">
-          <nav className="bg-card border border-border rounded-lg p-4 space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
-              Navigation
-            </h2>
-
-            <button
-              onClick={() => router.push("/")}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-foreground cursor-pointer"
-            >
-              <Home className="w-4 h-4" />
-              <span className="text-sm font-medium">Home</span>
-            </button>
-
-            <button
-              onClick={() => router.push("/create")}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-foreground cursor-pointer"
-            >
-              <PenSquare className="w-4 h-4" />
-              <span className="text-sm font-medium">Create Post</span>
-            </button>
-
-            <div className="pt-4 mt-4 border-t border-border">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 px-3">
-                Categories
-              </h3>
-
-              {categories.map((category) => {
-                const isActive = selectedCategory === category;
-                const dotColor = {
-                  General: "bg-blue-500",
-                  Hostel: "bg-orange-500",
-                  Exams: "bg-yellow-500",
-                  Gossip: "bg-green-500",
-                  Placements: "bg-purple-500",
-                }[category];
-
-                return (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors cursor-pointer ${
-                      isActive
-                        ? "bg-muted text-foreground font-medium"
-                        : "hover:bg-muted text-foreground"
-                    }`}
-                  >
-                    <span className={`w-2 h-2 rounded-full ${dotColor}`}></span>
-                    <span className="text-sm">{category}</span>
-                  </button>
-                );
-              })}
-
-              {selectedCategory && (
-                <button
-                  onClick={() => setSelectedCategory(null)}
-                  className="w-full flex items-center gap-3 px-3 py-2 mt-2 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  <span className="text-sm">Clear filter</span>
-                </button>
-              )}
-            </div>
-
-            <div className="pt-4 mt-4 border-t border-border space-y-2">
-              <button
-                onClick={() => router.push("/about")}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors text-foreground cursor-pointer"
-              >
-                <Info className="w-4 h-4" />
-                <span className="text-sm font-medium">About & Rules</span>
-              </button>
-            </div>
-
-            <div className="pt-4 mt-4 border-t border-border">
-              <div className="flex gap-1">
-                <a
-                  href="https://github.com/abhinavxdd"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center w-9 h-9 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                  title="GitHub"
-                >
-                  <Github className="w-4 h-4" />
-                </a>
-                <a
-                  href="https://www.linkedin.com/in/abh1navvv"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center w-9 h-9 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                  title="LinkedIn"
-                >
-                  <Linkedin className="w-4 h-4" />
-                </a>
-                <a
-                  href="https://www.instagram.com/abh1navv.v"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center w-9 h-9 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                  title="Instagram"
-                >
-                  <Instagram className="w-4 h-4" />
-                </a>
-                <a
-                  href="mailto:abh1nav.rj02@gmail.com"
-                  className="flex items-center justify-center w-9 h-9 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                  title="Email"
-                >
-                  <Mail className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-          </nav>
-        </aside>
+        <Sidebar
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          setSearchQuery={setSearchQuery}
+        />
 
         {/* Main Content */}
         <main className="flex-1 max-w-2xl flex flex-col gap-4">
