@@ -33,6 +33,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSearch } from "@/contexts/SearchContext";
 import { toast } from "sonner";
 import Leaderboard from "@/components/Leaderboard";
+import ConfessionCard from "@/components/ConfessionCard";
 
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
@@ -254,8 +255,9 @@ export default function HomePage() {
         </main>
 
         {/* Right Sidebar - Leaderboard */}
-        <aside className="hidden xl:block w-80 sticky top-20 h-fit">
+        <aside className="hidden xl:block w-80 sticky top-20 h-fit space-y-4">
           <Leaderboard />
+          <ConfessionCard />
         </aside>
       </div>
     </div>
