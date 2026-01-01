@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const generateAlias = require("../utils/aliasGenerator");
+const { generateOTP, sendOTPEmail } = require("../utils/emailService");
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
@@ -12,34 +13,67 @@ exports.signup = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      // If user exists but not verified, allow re-sending OTP
+      if (!existingUser.isEmailVerified) {
+        const otp = generateOTP();
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        existingUser.otp = otp;
+        existingUser.otpExpires = otpExpires;
+        existingUser.password = password; // Update password in case they changed it
+        await existingUser.save();
+
+        // Send OTP email
+        const emailResult = await sendOTPEmail(email, otp);
+        if (!emailResult.success) {
+          return res.status(500).json({ message: "Failed to send OTP email" });
+        }
+
+        return res.status(200).json({
+          message: "OTP resent to your email",
+          userId: existingUser._id,
+          requiresVerification: true,
+        });
+      }
       return res.status(400).json({ message: "Email already registered" });
     }
 
+    // Generate unique alias
     let alias = generateAlias();
-
     while (await User.findOne({ alias })) {
       alias = generateAlias();
     }
 
+    // Generate OTP
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+
+    // Create user (not verified yet)
     const user = await User.create({
       email,
       password,
       alias,
+      otp,
+      otpExpires,
+      isEmailVerified: false,
     });
 
-    const token = generateToken(user._id);
+    // Send OTP email
+    const emailResult = await sendOTPEmail(email, otp);
+    if (!emailResult.success) {
+      // Delete user if email fails to send
+      await User.findByIdAndDelete(user._id);
+      return res.status(500).json({ message: "Failed to send OTP email" });
+    }
 
     res.status(201).json({
-      message: "Account created successfully",
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        alias: user.alias,
-        isAdmin: user.isAdmin || false,
-      },
+      message:
+        "OTP sent to your email. Please verify to complete registration.",
+      userId: user._id,
+      requiresVerification: true,
     });
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -55,6 +89,14 @@ exports.login = async (req, res) => {
 
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    // Check if email is verified
+    if (!user.isEmailVerified) {
+      return res.status(403).json({
+        message:
+          "Account not verified. Please complete your signup by verifying your email.",
+      });
     }
 
     // Check if password matches
@@ -187,6 +229,109 @@ exports.deleteAccount = async (req, res) => {
 
     res.status(200).json({
       message: "Account deleted successfully",
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+// Verify OTP and complete registration
+exports.verifyOTP = async (req, res) => {
+  try {
+    const { userId, otp } = req.body;
+
+    if (!userId || !otp) {
+      return res.status(400).json({ message: "User ID and OTP are required" });
+    }
+
+    // Find user and include OTP fields
+    const user = await User.findById(userId).select("+otp +otpExpires");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: "Email already verified" });
+    }
+
+    if (!user.otp || !user.otpExpires) {
+      return res
+        .status(400)
+        .json({ message: "No OTP found. Please request a new one." });
+    }
+
+    // Check if OTP has expired
+    if (new Date() > user.otpExpires) {
+      return res
+        .status(400)
+        .json({ message: "OTP has expired. Please request a new one." });
+    }
+
+    // Verify OTP
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Mark email as verified and clear OTP
+    user.isEmailVerified = true;
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    await user.save();
+
+    // Generate token for automatic login
+    const token = generateToken(user._id);
+
+    res.status(200).json({
+      message: "Email verified successfully",
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        alias: user.alias,
+        isAdmin: user.isAdmin || false,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+// Resend OTP
+exports.resendOTP = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const user = await User.findById(userId).select("+otp +otpExpires");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: "Email already verified" });
+    }
+
+    // Generate new OTP
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
+
+    // Send OTP email
+    const emailResult = await sendOTPEmail(user.email, otp);
+    if (!emailResult.success) {
+      return res.status(500).json({ message: "Failed to send OTP email" });
+    }
+
+    res.status(200).json({
+      message: "OTP resent to your email",
     });
   } catch (err) {
     res.status(400).json({ message: err.message });
