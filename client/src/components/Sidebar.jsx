@@ -7,8 +7,6 @@ import {
   TrendingUp,
   List,
   PenSquare,
-  ChevronDown,
-  ChevronUp,
   Info,
   Github,
   Linkedin,
@@ -26,8 +24,6 @@ export default function Sidebar({
   setSearchQuery,
 }) {
   const router = useRouter();
-  const [isCategoriesOpen, setIsCategoriesOpen] = useState(true);
-  const [isResourcesOpen, setIsResourcesOpen] = useState(false);
 
   const categories = ["General", "Hostel", "Exams", "Gossip", "Placements"];
 
@@ -75,7 +71,7 @@ export default function Sidebar({
   );
 
   return (
-    <aside className="hidden lg:block w-64 sticky top-20 h-fit">
+    <aside className="hidden lg:block w-64 sticky top-20 self-start">
       <nav className="bg-zinc-900 border border-white/10 rounded-lg overflow-hidden">
         {/* Main Navigation */}
         <div className="p-2">
@@ -126,68 +122,48 @@ export default function Sidebar({
 
         {/* Categories Section */}
         <div>
-          <button
-            onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-zinc-800/50 transition-colors"
-          >
+          <div className="px-4 py-3">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Categories
             </span>
-            {isCategoriesOpen ? (
-              <ChevronUp className="w-4 h-4 text-gray-400" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            )}
-          </button>
+          </div>
 
-          {isCategoriesOpen && (
-            <div className="px-2 pb-2 space-y-1">
-              {categories.map((category) => (
-                <CategoryButton
-                  key={category}
-                  category={category}
-                  isActive={selectedCategory === category}
-                />
-              ))}
-              {selectedCategory && (
-                <button
-                  onClick={() => setSelectedCategory(null)}
-                  className="w-full px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-zinc-800/50 rounded-md transition-all text-left"
-                >
-                  Clear filter
-                </button>
-              )}
-            </div>
-          )}
+          <div className="px-2 pb-2 space-y-1">
+            {categories.map((category) => (
+              <CategoryButton
+                key={category}
+                category={category}
+                isActive={selectedCategory === category}
+              />
+            ))}
+            {selectedCategory && (
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className="w-full px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-zinc-800/50 rounded-md transition-all text-left"
+              >
+                Clear filter
+              </button>
+            )}
+          </div>
         </div>
 
         <Separator className="bg-white/10" />
 
         {/* Resources Section */}
         <div>
-          <button
-            onClick={() => setIsResourcesOpen(!isResourcesOpen)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-zinc-800/50 transition-colors"
-          >
+          <div className="px-4 py-3">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Resources
             </span>
-            {isResourcesOpen ? (
-              <ChevronUp className="w-4 h-4 text-gray-400" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            )}
-          </button>
+          </div>
 
-          {isResourcesOpen && (
-            <div className="px-2 pb-2">
-              <NavButton
-                icon={Info}
-                label="About & Rules"
-                onClick={() => router.push("/about")}
-              />
-            </div>
-          )}
+          <div className="px-2 pb-2">
+            <NavButton
+              icon={Info}
+              label="About & Rules"
+              onClick={() => router.push("/about")}
+            />
+          </div>
         </div>
 
         <Separator className="bg-white/10" />
@@ -230,6 +206,11 @@ export default function Sidebar({
               <Mail className="w-4 h-4" />
             </a>
           </div>
+
+          {/* Copyright */}
+          <p className="text-xs text-gray-500 text-center mt-3">
+            ZeroVerse © 2026. All rights reserved.
+          </p>
         </div>
       </nav>
     </aside>

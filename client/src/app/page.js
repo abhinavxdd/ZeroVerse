@@ -96,8 +96,8 @@ export default function HomePage() {
   };
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-6">
-      <div className="flex gap-6">
+    <div className="container mx-auto max-w-[1400px] px-5 py-6">
+      <div className="flex gap-7 justify-between">
         {/* Left Sidebar Navigation */}
         <Sidebar
           selectedCategory={selectedCategory}
@@ -108,7 +108,7 @@ export default function HomePage() {
         />
 
         {/* Main Content */}
-        <main className="flex-1 max-w-2xl flex flex-col gap-4">
+        <main className="flex-1 max-w-[680px] mx-auto flex flex-col gap-4">
           {/* Filter Indicator */}
           {selectedCategory && (
             <div className="bg-primary/5 border-2 border-primary/20 rounded-lg p-3 flex items-center justify-between backdrop-blur-sm">
