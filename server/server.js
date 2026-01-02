@@ -15,7 +15,13 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB error!", err));
 
-app.use(cors());
+// CORS - Allow frontend to access backend
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Routes
