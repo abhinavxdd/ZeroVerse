@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import VisitorCounter from "@/components/VisitorCounter";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SearchProvider } from "@/contexts/SearchContext";
 import { Toaster } from "sonner";
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
           <SearchProvider>
             <Navbar />
             <main className="flex-1">{children}</main>
+            <VisitorCounter />
             <Toaster position="top-center" richColors />
           </SearchProvider>
         </AuthProvider>
