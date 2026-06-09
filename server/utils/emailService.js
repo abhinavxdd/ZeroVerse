@@ -178,7 +178,17 @@ const sendOTPEmail = async (email, otp) => {
       return { success: true, messageId: info.messageId };
     }
   } catch (error) {
-    console.error("Error sending OTP email:", error);
+    // console.error("Error sending OTP email:", error);
+    console.error("SendGrid Error:");
+    console.error("Message:", error.message);
+    console.error("Code:", error.code);
+
+    if (error.response) {
+      console.error(
+        "Response Body:",
+        JSON.stringify(error.response.body, null, 2)
+      );
+    }
     return { success: false, error: error.message };
   }
 };
