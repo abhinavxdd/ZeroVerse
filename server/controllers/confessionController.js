@@ -30,9 +30,9 @@ exports.createConfession = async (req, res) => {
 
     console.log("🤖 Calling Gemini AI for moderation...");
 
-    // AI Moderation using Gemini 3 Flash
+    // AI moderation model can be overridden in deployment environment variables.
     const model = genAI.getGenerativeModel({
-      model: "gemini-3-flash-preview",
+      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
       generationConfig: {
         responseMimeType: "application/json",
       },
@@ -290,7 +290,7 @@ exports.updateConfession = async (req, res) => {
     console.log("🤖 Re-running AI moderation for edited confession...");
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-3-flash-preview",
+      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
       generationConfig: {
         responseMimeType: "application/json",
       },
