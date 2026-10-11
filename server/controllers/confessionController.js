@@ -5,6 +5,24 @@ const User = require("../models/User");
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+async function generateWithRetry(model, prompt, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await model.generateContent(prompt);
+    } catch (error) {
+      const retryable = error.status === 503 || error.status === 429;
+
+      if (!retryable || i === retries - 1) {
+        throw error;
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, 1000 * 2 ** i)
+      );
+    }
+  }
+}
+
 /**
  * POST /api/confess
  * AI-moderated anonymous confession submission
@@ -82,7 +100,7 @@ Analyze this confession and return ONLY valid JSON in this exact format:
 CONFESSION TO MODERATE:
 ${fullText}`;
 
-    const result = await model.generateContent(prompt);
+    const result = await generateWithRetry(model, prompt);
     const response = await result.response;
     const responseText = response.text();
 
@@ -340,7 +358,7 @@ Analyze this confession and return ONLY valid JSON in this exact format:
 CONFESSION TO MODERATE:
 ${fullText}`;
 
-    const result = await model.generateContent(prompt);
+    const result = await generateWithRetry(model, prompt);
     const response = await result.response;
     const responseText = response.text();
 
